@@ -45,9 +45,10 @@ private except the two public exceptions in H3.
 
 C2.1 is enforced by three layers. None of them is allowed to be the only one.
 
-1. **`.githooks/pre-push`** refuses any push whose remote ref is `refs/heads/main`, then scans the
-   exact commits being pushed for private material and secrets. It is the only layer that runs
-   before data reaches GitHub.
+1. **Lefthook, loading `hooks/core.yml` and `hooks/owner.yml`** from this repository through
+   `remotes` at the `hooks-v2` tag and installed by `just hooks`. The `core-policy` job refuses any
+   push whose remote ref is `refs/heads/main`, then scans the exact commits being pushed for
+   private material and secrets. It is the only layer that runs before data reaches GitHub.
 2. **`.github/workflows/guard-direct-push.yml`** runs after a push to `main`, asks the API whether
    every pushed commit belongs to a merged pull request, and fails plus files or updates one
    issue labelled `direct-push` when one does not.
@@ -154,14 +155,14 @@ The canonical recipes behind those contexts:
 | `privacy-commits <rev>`            | Every commit reachable from `<rev>`.                                                                                   |
 | `whitespace` / `whitespace-staged` | `git diff --check` / `git diff --cached --check`.                                                                      |
 | `gitleaks`                         | `gitleaks git --redact` over the pushed range or pull-request diff; never prints a finding value.                      |
-| `hooks`                            | Installs the repository-local hooks path (below).                                                                      |
+| `hooks`                            | Runs `lefthook install` and asserts the `core-*` and `owner-*` jobs are loaded (below).                                |
 | `agent-files`                      | Verifies `.agents/skills` and `.claude/skills` agree (C8.3).                                                           |
 | `history`                          | Scans every published ref. Run before publication; CI runs it on `main` and weekly.                                    |
 | `inspect`                          | Read-only local orientation; never mutates.                                                                            |
 
 ### Canonical hook implementation
 
-The hook and check implementation is **one TypeScript file**, `scripts/git-hook.ts`, kept
+The pre-push policy implementation is **one TypeScript file**, `scripts/git-hook.ts`, kept
 byte-identical in every repository. It must not embed a directory depth: it locates the repository
 with `git rev-parse --show-toplevel`, so the same bytes work in every checkout. `agent-tooling` is
 the reference copy; a change lands there first and is copied in the same pull request series to
@@ -171,19 +172,15 @@ The workflow files `checks.yml`, `guard-direct-push.yml` and `pr-automerge.yml` 
 across repositories. The checks-workflow name is fixed (`Checks`), so there is no per-repository
 edit left in the automerge copy.
 
-`.githooks/pre-commit` and `.githooks/pre-push` are three-line POSIX shell launchers. They contain
-no checks themselves:
+The launchers are Lefthook, not shell scripts. Each repository's `lefthook.yml` loads
+`hooks/core.yml` and `hooks/owner.yml` from this repository through `remotes` at the annotated tag
+`hooks-v2`, and `just hooks` installs them (C7.8). The `core-policy` job calls
+`just hook-pre-push`, which runs `bun scripts/git-hook.ts pre-push` with the pushed ref lines on
+standard input. The `hook-*` recipes stay `[private]`.
 
-```sh
-#!/usr/bin/env sh
-set -eu
-exec just --justfile "$(git rev-parse --show-toplevel)/justfile" hook-pre-push
-```
-
-(`pre-commit` calls `hook-pre-commit`.) The `hook-*` recipes are `[private]` and call
-`bun scripts/git-hook.ts pre-commit|pre-push`.
-
-`pre-commit` runs `just privacy-identity privacy-staged whitespace-staged`.
+The C7.10 `core-*` jobs in `hooks/core.yml` cover formatting, lint, secrets, forbidden files,
+workflow and shell checks; this owner's `owner-privacy-identity` and `owner-privacy-staged` jobs
+run beside them. Agents never skip a hook (C7.11).
 
 `pre-push` reads the ref lines from standard input and, for each line
 `<local ref> <local oid> <remote ref> <remote oid>`:
@@ -197,13 +194,34 @@ exec just --justfile "$(git rev-parse --show-toplevel)/justfile" hook-pre-push
 5. Run `just privacy-range <local oid> <base-or-remote oid>` and the `gitleaks` range scan over the
    same commits. Stop at the first non-zero exit.
 
-`just hooks` reads the existing `core.hooksPath`; it sets `.githooks` only when the value is unset
-or already `.githooks`, refuses to replace any other value, and never touches global Git settings.
+`just hooks` removes a local `core.hooksPath` only when it equals `.githooks`, refuses any other
+value or a global one, runs `lefthook install`, and asserts that `lefthook dump` contains the
+`core-*` and `owner-*` jobs. `lefthook-local.yml` is git-ignored.
 
 C5.1 measurement, median of available pull-request runs on 2026-11-23: `agent-tooling` 13 s,
 `lilith-haos-pi5` 14 s, `parents-windows-pc` 14 s, `ugallu-omarchy-desktop` 13 s,
 `ryouko-cachyos-laptop` 21 s, `homelab-services` 66 s, `shamiko-ubuntu-server` 95 s. The last two
 exceed 60 s and record exceptions until the fix in the backlog lands.
+
+## Git hooks
+
+Hooks run through Lefthook, pinned in `mise.toml` as `"aqua:evilmartians/lefthook"` (C7.8). Each
+repository's `lefthook.yml` loads `hooks/core.yml` and `hooks/owner.yml` from this repository
+through `remotes` at the annotated tag `hooks-v2`, and adds its own jobs under names that never
+start with `core-` or `owner-`. Repositories migrate from the old `.githooks` launchers to Lefthook
+per core C7.8; `scripts/git-hook.ts` stays the `hook-pre-push` implementation.
+
+This owner's `hooks/owner.yml` jobs run before every commit:
+
+| Job                      | Recipe                  | Behaviour                                                                                                                            |
+| ------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `owner-privacy-identity` | `just privacy-identity` | Fails unless the effective author and committer email, including environment overrides, is the owner's GitHub no-reply address (H1). |
+| `owner-privacy-staged`   | `just privacy-staged`   | Fails when a staged blob contains private material (H1).                                                                             |
+
+`just hooks` removes a local `core.hooksPath` only when it equals `.githooks`, refuses any other
+value or a global one, runs `lefthook install`, and then asserts that `lefthook dump` contains the
+`core-*` and `owner-*` jobs, because a failed remote fetch only warns. `lefthook-local.yml` is
+git-ignored, and agents never skip hooks: no `LEFTHOOK=0`, no `--no-verify` (C7.11).
 
 ## Owner rules
 
@@ -311,7 +329,7 @@ justfile
 mise.toml
 .editorconfig
 .gitattributes
-.githooks/{pre-commit,pre-push}
+lefthook.yml
 .github/dependabot.yml
 .github/workflows/{checks.yml,guard-direct-push.yml,pr-automerge.yml}
 docs/{architecture,status,privacy,handoff,validation}.md
@@ -424,7 +442,7 @@ Follow-ups, in order, none in this pull request:
 
 | Repository               | Gaps against core and this standard                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Proposed fix                                                                                                                                                   | PR check median                    |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| `.github`                | Added by this pull request. Still missing a local hook and a direct-push guard; no `.github/dependabot.yml` or workflows (deliberate for a docs-only standard).                                                                                                                                                                                                                                                                                                                               | Record C2.1 as an exception in `docs/exceptions.md`, or add the hook and the two workflows in a later pull request.                                            | no runs                            |
+| `.github`                | Holds `hooks/core.yml` and `hooks/owner.yml`; still missing a local `lefthook.yml`, the Lefthook pin and a direct-push guard, and it has no `.github/dependabot.yml` or workflows (deliberate for a docs-only standard).                                                                                                                                                                                                                                                                      | Record C2.1 as an exception in `docs/exceptions.md`, or add `lefthook.yml`, the pin and the two workflows in a later pull request.                             | no runs                            |
 | `agent-tooling`          | Pre-push scans the worktree only (H2, C2.1); pre-commit has no privacy or identity check; `check` omits `privacy-identity`; checks workflow named "Catalog checks" (H9); no `mise.toml` (C7.2, H8); no `.agents/skills` or `.claude/skills` despite being the tooling repository (C8.2); `.gitignore` covers only `private/`, `rendered/`, `node_modules/` (H1); auto-merge settings still allow merge and rebase.                                                                            | Adopt the canonical dispatcher and recipes, add mise and skills, apply the settings table.                                                                     | 13 s                               |
 | `homelab-services`       | Open `direct-push` issue #104 is a false positive; the guard has no association retry (H2); `check` has no `fmt-check` and no TypeScript type check in the same recipe (H9); checks workflow named "Declarations and safeguards" (H9); C5.1 exceeded at 66 s; no `pre-commit` hook (H7); 22 Python scripts without exception rows (H6).                                                                                                                                                       | Fix the guard, close #104, split the heavy job, rename the workflow, add the hook and language rows.                                                           | 66 s                               |
 | `shamiko-ubuntu-server`  | C5.1 exceeded at 95 s; seven `archive/*`/`wip/*` branches (H11); checks workflow named "Documentation and safeguards" and runs `history-ci` as a separate path (H9); no `mise.toml` (H8); 78 Python files (H6); local clone stale against `origin/main`.                                                                                                                                                                                                                                      | Parallelise the CI jobs and drop non-diff work from the required path; prune branches; port Python.                                                            | 95 s                               |
