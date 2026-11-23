@@ -15,8 +15,8 @@ Standards and shared defaults for sakuragaoka-homelab repositories.
   copy of the shared core config; never edit it here alone.
 - [hooks/owner.yml](hooks/owner.yml) — this owner's extra jobs. The job names are `owner-*`.
 
-Repositories load both files through `remotes` at the annotated tag `hooks-v2`, for example
-`git_url: https://github.com/sakuragaoka-homelab/.github`, `ref: hooks-v2`,
+Repositories load both files through `remotes` at the annotated tag `hooks-v3`, for example
+`git_url: https://github.com/sakuragaoka-homelab/.github`, `ref: hooks-v3`,
 `configs: [hooks/core.yml, hooks/owner.yml]`. The repository is public, so CI can fetch the tag
 without a token. Move the tag only in a pull request that also updates every consumer.
 
