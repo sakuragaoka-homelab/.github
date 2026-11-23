@@ -204,6 +204,9 @@ C5.1 measurement, median of available pull-request runs on 2026-11-23: `agent-to
 `ryouko-cachyos-laptop` 21 s, `homelab-services` 66 s, `shamiko-ubuntu-server` 95 s. The last two
 exceed 60 s and record exceptions until the fix in the backlog lands.
 
+`just fleet-audit` re-derives this conformance list read-only, and `just fleet-audit --timing`
+adds the C5.1 median; `scripts/fleet-audit.ts` is the shared copy of the tool.
+
 ## Git hooks
 
 Hooks run through Lefthook, pinned in `mise.toml` as `"aqua:evilmartians/lefthook"` (C7.8). Each

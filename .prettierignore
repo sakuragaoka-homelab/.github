@@ -1,4 +1,5 @@
 # Verbatim files from the shared standard. Never format them in place.
 standards/core.md
 scripts/core-drift.ts
+scripts/fleet-audit.ts
 hooks/core.yml
