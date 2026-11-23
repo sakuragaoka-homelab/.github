@@ -25,3 +25,11 @@ rules every homelab, machine and tooling repository follows. It contains documen
 - Work on a branch and open a pull request. This organization squashes merges, so the pull
   request body is the permanent record. Never push to `main`.
 - Do not add workflows or change GitHub settings from this repository.
+
+## Auditing
+
+`just fleet-audit` checks every `sakuragaoka-homelab` repository against `standards/core.md` and
+`standards/owner.md` and exits 1 on a gap. `just fleet-audit --timing` adds the C5.1 median pull
+request CI wall time; `--owner <owner>` narrows the scope and `--json` prints machine output.
+Exceptions recorded in `docs/exceptions.md` are reported as excepted, not failures. The audit is
+read-only, needs `gh` logged in as both `deathpie` and `simpsonm09`, and runs locally only.
