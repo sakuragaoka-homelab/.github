@@ -19,7 +19,7 @@ may tighten the core. They do not loosen it.
 | `ryouko-cachyos-laptop`  | private           | machine (laptop)     | CachyOS with KDE Plasma, hybrid graphics.                                                                               |
 | `ugallu-omarchy-desktop` | private           | machine (desktop)    | Windows 11 to Omarchy migration, still in planning.                                                                     |
 | `lilith-haos-pi5`        | private           | machine (appliance)  | Home Assistant OS on a Raspberry Pi 5.                                                                                  |
-| `parents-windows-pc`     | private           | machine (desktop)    | Remotely administered Windows 10 PC. Name is a recorded exception to H5.                                                |
+| `parents-windows-pc`     | private           | machine (desktop)    | Remotely administered Windows 10 PC at a relative's home. Named per H5's administered-for-someone-else form.            |
 | `.github-private`        | private           | organization profile | Members-only profile. GitHub reserved name; not an H5 violation.                                                        |
 | `machine-inventory`      | public            | inventory tooling    | Moved from another owner. Public exception under H3.                                                                    |
 | `hermes-agent`           | public            | service and tooling  | Moved from another owner, renamed from `openclaw-homelab`. Public exception under H3.                                   |
@@ -294,13 +294,11 @@ says so in its plan. A merged document is not permission to execute it.
 ### H5. Names
 
 Machine repositories are `<character>-<os>-<formfactor>`, lowercase, for example
-`shamiko-ubuntu-server`, `ryouko-cachyos-laptop`, `lilith-haos-pi5`. Service and tooling
+`shamiko-ubuntu-server`, `ryouko-cachyos-laptop`, `lilith-haos-pi5`. A machine the owner
+administers for someone else is named for whose it is instead of a character:
+`<who>-<os>-<formfactor>`, for example `parents-windows-pc`. Service and tooling
 repositories are plain kebab nouns: `homelab-services`, `agent-tooling`, `machine-inventory`.
 `.github` and `.github-private` use GitHub's reserved names.
-
-`parents-windows-pc` is a recorded exception: it has no character name. It is renamed to
-`<character>-windows-pc` in the backlog; the character is the owner's choice, and links in
-`.github-private` and the READMEs move in the same pull request.
 
 ### H6. Languages
 
@@ -435,8 +433,7 @@ Follow-ups, in order, none in this pull request:
    `mise.toml`, `favicon.svg` and the recipe set.
 6. `.github-private`: add the guard and automerge workflows, the four labels, and the missing
    settings; land its next commit through a pull request.
-7. Rename `parents-windows-pc` and update links.
-8. Delete `archive/*` and `wip/*` branches after recording them as `save/*`.
+7. Delete `archive/*` and `wip/*` branches after recording them as `save/*`.
 
 ## Conformance backlog
 
@@ -448,7 +445,7 @@ Follow-ups, in order, none in this pull request:
 | `shamiko-ubuntu-server`  | C5.1 exceeded at 95 s; seven `archive/*`/`wip/*` branches (H11); checks workflow named "Documentation and safeguards" and runs `history-ci` as a separate path (H9); no `mise.toml` (H8); 78 Python files (H6); local clone stale against `origin/main`.                                                                                                                                                                                                                                      | Parallelise the CI jobs and drop non-diff work from the required path; prune branches; port Python.                                                            | 95 s                               |
 | `lilith-haos-pi5`        | Python-only recipes with no `mise.toml` (H6, H8); no `.claude/skills` links (C8.3); `SKILLS.md` index (H7); checks workflow named "Documentation and safeguards" (H9); `archive/*`/`wip/*` branches (H11); the validation/coverage document set differs from its siblings (H7).                                                                                                                                                                                                               | Adopt the canonical skeleton and recipes, then port the scripts.                                                                                               | 14 s                               |
 | `ryouko-cachyos-laptop`  | `check` omits `privacy-identity` (H2); stale repository description says "Bazzite laptop to Omarchy migration" (C1.2); no `docs/validation.md` or `docs/coverage.md` (H7); `.bun-version` 1.4.4 versus the 1.4.5 pin (H8); one `archive/` branch (H11); checks workflow name (H9).                                                                                                                                                                                                            | Adopt the canonical recipe and skeleton; update description and Bun pin.                                                                                       | 21 s                               |
-| `parents-windows-pc`     | Name is an H5 exception; stale `package.json` pins `bun@1.4.3` and `engines.bun >=1.4.3` (H8); no `docs/coverage.md` (H7); checks workflow name (H9); local clone stale.                                                                                                                                                                                                                                                                                                                      | Rename, pin Bun 1.4.5, adopt the skeleton.                                                                                                                     | 14 s                               |
+| `parents-windows-pc`     | Stale `package.json` pins `bun@1.4.3` and `engines.bun >=1.4.3` (H8); no `docs/coverage.md` (H7); checks workflow name (H9); local clone stale.                                                                                                                                                                                                                                                                                                                                               | Pin Bun 1.4.5, adopt the skeleton.                                                                                                                             | 14 s                               |
 | `ugallu-omarchy-desktop` | Windows/WSL clone rule becomes wrong after the Omarchy install (H7 AGENTS.md requirement); 3 Python scripts (H6); no `mise.toml` (H8); `SKILLS.md` (H7); checks workflow name (H9); planning-only repo has no acceptance evidence for the target layout.                                                                                                                                                                                                                                      | Rewrite the host rule with the migration, port scripts, adopt the skeleton.                                                                                    | 13 s                               |
 | `.github-private`        | Every push went straight to `main` with no pull request (C2.1); no guard, automerge, hooks or dependabot (C3, H9); `delete_branch_on_merge=false`, `allow_update_branch=false`; only default labels, missing `automerge`, `major-update`, `direct-push`, `dependencies`; single initial commit predates this policy.                                                                                                                                                                          | Apply the private-repository settings, labels and workflows; next change arrives through a pull request.                                                       | no runs                            |
 | `machine-inventory`      | Public repository with every CI job gated on `simpsonm09-org`/`simpsonm09-projects`, so checks are skipped (H3); secret scanning, push protection and validity checks off; CodeQL is an advanced workflow, not default setup (C6.1); ruleset has no required status checks; auto-merge off and merge/rebase methods still enabled; no `favicon.svg` (C1.3); no `mise.toml`; recipes are `lint`/`verify`/`render-check`, not the C7.5 set; depends on another owner's reusable workflows (H3). | Adopt the public exception: remove owner gates and foreign reusable workflows, set the ruleset and scan settings, add favicon, mise and the canonical recipes. | 130 s (historic; jobs now skipped) |
