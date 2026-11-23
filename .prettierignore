@@ -1,3 +1,4 @@
 # Verbatim files from the shared standard. Never format them in place.
 standards/core.md
 scripts/core-drift.ts
+hooks/core.yml
