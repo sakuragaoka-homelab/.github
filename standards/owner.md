@@ -10,21 +10,22 @@ may tighten the core. They do not loosen it.
 
 ## Scope
 
-| Repository                     | Visibility        | Kind                 | Notes                                                                                                                   |
-| ------------------------------ | ----------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `.github`                      | public            | standards            | This repository. Standards, shared hook configuration and defaults; no runtime code or homelab data.                    |
-| `homelab-services`             | private           | service catalog      | Compose projects, edge routing, adoption and status records.                                                            |
-| `agent-tooling`                | private           | tooling              | Model hub and driver configuration; home of the canonical hook and recipe implementations that every repository copies. |
-| `shamiko-ubuntu-server`        | private           | machine (server)     | Ubuntu server, NVIDIA GPU, media stack, off-site backup.                                                                |
-| `ryouko-cachyos-laptop`        | private           | machine (laptop)     | CachyOS with KDE Plasma, hybrid graphics.                                                                               |
-| `ugallu-cachyos-desktop`       | private           | machine (desktop)    | Windows 11 to CachyOS + KDE Plasma migration; consumes `workstation-cachyos-baseline` (H13).                            |
-| `workstation-cachyos-baseline` | private           | tooling              | Shared CachyOS + KDE Plasma procedures, templates and recipes vendored into CachyOS machine repositories (H13).         |
-| `lilith-haos-pi5`              | private           | machine (appliance)  | Home Assistant OS on a Raspberry Pi 5.                                                                                  |
-| `parents-windows-pc`           | private           | machine (desktop)    | Remotely administered Windows 10 PC at a relative's home. Named per H5's administered-for-someone-else form.            |
-| `.github-private`              | private           | organization profile | Members-only profile. GitHub reserved name; not an H5 violation.                                                        |
-| `machine-inventory`            | public            | inventory tooling    | Moved from another owner. Public exception under H3.                                                                    |
-| `hermes-agent`                 | public            | service and tooling  | Moved from another owner, renamed from `openclaw-homelab`. Public exception under H3.                                   |
-| `homelab-config`               | private, archived | retired              | Superseded by `homelab-services` on 2026-10-29. No local clone.                                                         |
+| Repository                     | Visibility        | Kind                 | Notes                                                                                                                                                          |
+| ------------------------------ | ----------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.github`                      | public            | standards            | This repository. Standards, shared hook configuration and defaults; no runtime code or homelab data.                                                           |
+| `homelab-services`             | private           | service catalog      | Compose projects, edge routing, adoption and status records.                                                                                                   |
+| `agent-tooling`                | private           | tooling              | Model hub and driver configuration; home of the canonical hook and recipe implementations that every repository copies.                                        |
+| `shamiko-ubuntu-server`        | private           | machine (server)     | Ubuntu server, NVIDIA GPU, media stack, off-site backup; planned consumer of `server-ubuntu-baseline` (H13).                                                   |
+| `ryouko-cachyos-laptop`        | private           | machine (laptop)     | CachyOS with KDE Plasma, hybrid graphics.                                                                                                                      |
+| `ugallu-cachyos-desktop`       | private           | machine (desktop)    | Windows 11 to CachyOS + KDE Plasma migration; adopting `workstation-cachyos-baseline` (H13).                                                                   |
+| `workstation-cachyos-baseline` | private           | tooling              | Shared CachyOS + KDE Plasma procedures, templates and recipes vendored into CachyOS machine repositories (H13).                                                |
+| `server-ubuntu-baseline`       | private           | tooling (planned)    | Shared Ubuntu server host procedures, templates and recipes, vendored into Ubuntu server machine repositories (H13). **Planned; not yet created.**             |
+| `lilith-haos-pi5`              | private           | machine (appliance)  | Home Assistant OS on a Raspberry Pi 5; an Ubuntu Server 26.04 rebuild is planned, after which it becomes a planned consumer of `server-ubuntu-baseline` (H13). |
+| `parents-windows-pc`           | private           | machine (desktop)    | Remotely administered Windows 10 PC at a relative's home. Named per H5's administered-for-someone-else form.                                                   |
+| `.github-private`              | private           | organization profile | Members-only profile. GitHub reserved name; not an H5 violation.                                                                                               |
+| `machine-inventory`            | public            | inventory tooling    | Moved from another owner. Public exception under H3.                                                                                                           |
+| `hermes-agent`                 | public            | service and tooling  | Moved from another owner, renamed from `openclaw-homelab`. Public exception under H3.                                                                          |
+| `homelab-config`               | private, archived | retired              | Superseded by `homelab-services` on 2026-10-29. No local clone.                                                                                                |
 
 Every repository not in this table is out of scope until it is added here.
 
@@ -346,8 +347,10 @@ favicon.svg
 ```
 
 `docs/coverage.md`, `docs/recreation.md` and a feature register are allowed additions where the
-repository needs them. A CachyOS machine repository that consumes the shared baseline also carries
-`baseline/`, `baseline.lock` and `machine.toml`, as H13 defines.
+repository needs them. A machine repository that consumes a shared baseline also carries
+`baseline/`, `baseline.lock` and `machine.toml`, as H13 defines. A CachyOS workstation vendors
+`workstation-cachyos-baseline`; an Ubuntu server vendors `server-ubuntu-baseline` once that
+repository exists and has a release.
 
 `SKILLS.md` is dropped. `AGENTS.md` is the only entry point (C8.1), each skill describes itself in
 frontmatter, and a copied index drifts. Skill links are per-skill symlinks as shown above, not one
@@ -410,23 +413,43 @@ title and body (C2.3), so the pull-request body is the permanent record: it stat
 the verification run, and any rollback. No AI attribution, no `Generated with`, no
 `Co-Authored-By` trailer.
 
-### H13. Shared workstation baseline
+### H13. Shared machine baselines
 
-`workstation-cachyos-baseline` holds the procedures, templates and `just` recipes that every
-CachyOS + KDE Plasma machine shares. Machine repositories vendor it; they never reference it at
-run time. The consumer contract in detail is
+Two repositories carry the procedures, templates and `just` recipes that machines of one class
+share. They follow the same consumer contract; the class and the scope differ.
+
+| Repository                     | Class                        | Status                           | Consumers                                           |
+| ------------------------------ | ---------------------------- | -------------------------------- | --------------------------------------------------- |
+| `workstation-cachyos-baseline` | CachyOS + KDE Plasma desktop | exists; releases `baseline-v<N>` | `ryouko-cachyos-laptop`, `ugallu-cachyos-desktop`   |
+| `server-ubuntu-baseline`       | Ubuntu 26.04 server host     | **planned; not yet created**     | `shamiko-ubuntu-server`, the future Ubuntu `lilith` |
+
+A machine repository vendors the baseline for its class; it never references it at run time. The
+consumer contract in detail is
 [`docs/consumption.md`](https://github.com/sakuragaoka-homelab/workstation-cachyos-baseline/blob/main/docs/consumption.md)
-in that repository; this rule is the summary it must satisfy.
+in `workstation-cachyos-baseline`; `server-ubuntu-baseline` must publish the same contract before
+its first consumer vendors it. This rule is the summary both must satisfy.
 
-- **Releases.** The baseline releases annotated tags `baseline-v<N>`, the same pattern as
-  `hooks-v<N>`. A tag never moves.
+- **Releases.** Each baseline releases annotated tags `baseline-v<N>`, the same pattern as
+  `hooks-v<N>`. A tag never moves, and each repository numbers its own tags.
 - **Vendoring.** A consumer copies the tagged tree into `baseline/` with `git archive` (no
   submodules; H1 forbids them) and records the source in `baseline.lock`: repository, tag,
   commit SHA and `tree_sha256`, the tree hash of `baseline/` (TOML). Nothing under `baseline/` is edited in the
   consumer; a change lands in the baseline and arrives through a new tag.
-- **Scope.** The baseline ships CachyOS procedures, templates and recipes only. It never
-  vendors the hook scripts, `checks.yml`, `guard-direct-push.yml` or `pr-automerge.yml`; those
-  stay owned by `agent-tooling` and the hook standard (C7.8 to C7.11, H2).
+- **Scope.** A baseline ships only the procedures, templates and recipes that are the same for
+  every machine of its class. Neither baseline vendors the hook scripts, `checks.yml`,
+  `guard-direct-push.yml` or `pr-automerge.yml`; those stay owned by `agent-tooling` and the hook
+  standard (C7.8 to C7.11, H2).
+  - `workstation-cachyos-baseline` ships the CachyOS workstation procedures: the attended install,
+    day one, firewall, remote access, AI tooling, browser and device conventions, automation,
+    privacy and the acceptance list.
+  - `server-ubuntu-baseline` is planned to ship the Ubuntu server host layer: Docker Engine,
+    Tailscale, `unattended-upgrades`, journald, swap and memory tuning, users and SSH hardening,
+    restic or borg backup units, and the mise/just/lefthook toolchain. An optional
+    desktop-session role covers a server that also runs a desktop session.
+  - Hardware and workload specifics stay in the machine repository: GPU and drivers, data and
+    media disks, the desktop session's own services, a Pi's firmware and boot order, USB devices
+    and appliance container host settings. `homelab-services` remains the source of truth for
+    containers on every server.
 - **Recipes.** The consumer's `justfile` uses `import 'baseline/consumer.justfile'`, which
   holds only `baseline-*` recipes, so nothing collides with the C7.5 and C7.10 contract recipes.
   The consumer's own `check` recipe includes `baseline-drift`.
@@ -435,6 +458,10 @@ in that repository; this rule is the summary it must satisfy.
   locally by `just check` only.
 - **Machine values.** `machine.toml` holds placeholders and non-identifying values (H1). Real
   addresses, serials, usernames and hostnames beyond the machine name stay outside Git.
+- **Planned repositories.** A row marked planned records an intended contract, not a repository.
+  It has no clone, release, tag or consumer until the owner approves creating it. No machine may
+  claim to consume a baseline that does not exist, and no rule above is satisfied by a planned
+  repository.
 
 ## Superseded
 
