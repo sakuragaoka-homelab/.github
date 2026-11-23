@@ -1,5 +1,4 @@
-# hooks/owner.yml — sakuragaoka-homelab owner jobs.
-# Loaded through `remotes` at the same pinned tag as hooks/core.yml.
+# hooks/owner.yml — sakuragaoka-homelab owner hook jobs. Loaded with hooks/core.yml via remotes.
 # Every job calls a `just` recipe from standards/owner.md. Repository jobs
 # never reuse an `owner-*` name.
 pre-commit:

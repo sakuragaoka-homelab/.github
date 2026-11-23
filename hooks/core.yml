@@ -61,13 +61,11 @@ pre-push:
   piped: true
   jobs:
     - name: core-policy
-      priority: 1
       use_stdin: true
       run: just hook-pre-push
       fail_text: "Push refused. main changes only through a pull request (C2.1), or the pushed range failed the secret scan."
 
     - name: core-fast-check
-      priority: 2
       run: just pre-push-check
       fail_text: "Fast pre-push checks failed; run `just check` for the full set."
 
