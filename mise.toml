@@ -1,0 +1,6 @@
+# Pinned tools for the standard repository. Every repository pin in the
+# organization uses the same versions. See standards/owner.md H8.
+
+[tools]
+just = "1.59.0"
+bun = "1.4.5"
