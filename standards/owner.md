@@ -304,8 +304,9 @@ repositories are plain kebab nouns: `homelab-services`, `agent-tooling`, `machin
 
 New code is TypeScript run by Bun. Python is being retired: do not add `.py` helpers, Python tests
 or inline Python heredocs. Shell is a thin launcher only; PowerShell only for code that runs on a
-Windows target. Existing Python is allowed under an exception row with a reason and a revisit date
-of **2027-06-30**, until the repository is ported or the owner records a new date:
+Windows target (`parents-windows-pc`), linted and parsed on Linux (C5.6). Existing Python is
+allowed under an exception row with a reason and a revisit date of **2027-06-30**, until the
+repository is ported or the owner records a new date:
 
 | Repository               | Python surface                 | Exception                           |
 | ------------------------ | ------------------------------ | ----------------------------------- |
@@ -345,9 +346,8 @@ repository needs them.
 `SKILLS.md` is dropped. `AGENTS.md` is the only entry point (C8.1), each skill describes itself in
 frontmatter, and a copied index drifts. Skill links are per-skill symlinks as shown above, not one
 directory symlink. `just agent-files` fails on a missing link, an extra link, a broken target, or a
-skill that names a recipe that does not exist. A Windows checkout documents
-`git config core.symlinks true` (Developer Mode) in `AGENTS.md`; a checkout where the links became
-text files fails `just agent-files` rather than silently losing skills.
+skill that names a recipe that does not exist. A checkout where the links became text files fails
+`just agent-files` rather than silently losing skills.
 
 ### H8. Toolchain pins
 
