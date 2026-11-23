@@ -10,20 +10,21 @@ may tighten the core. They do not loosen it.
 
 ## Scope
 
-| Repository               | Visibility        | Kind                 | Notes                                                                                                                   |
-| ------------------------ | ----------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `.github`                | private           | standards            | This repository. Standards and shared defaults, no runtime code.                                                        |
-| `homelab-services`       | private           | service catalog      | Compose projects, edge routing, adoption and status records.                                                            |
-| `agent-tooling`          | private           | tooling              | Model hub and driver configuration; home of the canonical hook and recipe implementations that every repository copies. |
-| `shamiko-ubuntu-server`  | private           | machine (server)     | Ubuntu server, NVIDIA GPU, media stack, off-site backup.                                                                |
-| `ryouko-cachyos-laptop`  | private           | machine (laptop)     | CachyOS with KDE Plasma, hybrid graphics.                                                                               |
-| `ugallu-omarchy-desktop` | private           | machine (desktop)    | Windows 11 to Omarchy migration, still in planning.                                                                     |
-| `lilith-haos-pi5`        | private           | machine (appliance)  | Home Assistant OS on a Raspberry Pi 5.                                                                                  |
-| `parents-windows-pc`     | private           | machine (desktop)    | Remotely administered Windows 10 PC at a relative's home. Named per H5's administered-for-someone-else form.            |
-| `.github-private`        | private           | organization profile | Members-only profile. GitHub reserved name; not an H5 violation.                                                        |
-| `machine-inventory`      | public            | inventory tooling    | Moved from another owner. Public exception under H3.                                                                    |
-| `hermes-agent`           | public            | service and tooling  | Moved from another owner, renamed from `openclaw-homelab`. Public exception under H3.                                   |
-| `homelab-config`         | private, archived | retired              | Superseded by `homelab-services` on 2026-10-29. No local clone.                                                         |
+| Repository                     | Visibility        | Kind                 | Notes                                                                                                                   |
+| ------------------------------ | ----------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `.github`                      | public            | standards            | This repository. Standards, shared hook configuration and defaults; no runtime code or homelab data.                    |
+| `homelab-services`             | private           | service catalog      | Compose projects, edge routing, adoption and status records.                                                            |
+| `agent-tooling`                | private           | tooling              | Model hub and driver configuration; home of the canonical hook and recipe implementations that every repository copies. |
+| `shamiko-ubuntu-server`        | private           | machine (server)     | Ubuntu server, NVIDIA GPU, media stack, off-site backup.                                                                |
+| `ryouko-cachyos-laptop`        | private           | machine (laptop)     | CachyOS with KDE Plasma, hybrid graphics.                                                                               |
+| `ugallu-cachyos-desktop`       | private           | machine (desktop)    | Windows 11 to CachyOS + KDE Plasma migration; consumes `workstation-cachyos-baseline` (H13).                            |
+| `workstation-cachyos-baseline` | private           | tooling              | Shared CachyOS + KDE Plasma procedures, templates and recipes vendored into CachyOS machine repositories (H13).         |
+| `lilith-haos-pi5`              | private           | machine (appliance)  | Home Assistant OS on a Raspberry Pi 5.                                                                                  |
+| `parents-windows-pc`           | private           | machine (desktop)    | Remotely administered Windows 10 PC at a relative's home. Named per H5's administered-for-someone-else form.            |
+| `.github-private`              | private           | organization profile | Members-only profile. GitHub reserved name; not an H5 violation.                                                        |
+| `machine-inventory`            | public            | inventory tooling    | Moved from another owner. Public exception under H3.                                                                    |
+| `hermes-agent`                 | public            | service and tooling  | Moved from another owner, renamed from `openclaw-homelab`. Public exception under H3.                                   |
+| `homelab-config`               | private, archived | retired              | Superseded by `homelab-services` on 2026-10-29. No local clone.                                                         |
 
 Every repository not in this table is out of scope until it is added here.
 
@@ -113,10 +114,10 @@ standard, not an optional cleanup.
 
 ## Profile choices
 
-| Rule | Choice                                                                                                                                                                                                                                                                                                                                                           |
-| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C1.5 | Issues are on in every repository. Wiki, Projects and Discussions are off.                                                                                                                                                                                                                                                                                       |
-| C2.7 | Commits are signed with SSH. Every checkout sets `commit.gpgsign=true` locally and keeps the key outside the repository. Public rulesets enforce `required_signatures`; private repositories rely on the local setting plus review because Free offers no central enforcement. The signature is never bypassed, and a checkout that cannot sign does not commit. |
+| Rule | Choice                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1.5 | Issues are on in every repository. Wiki, Projects and Discussions are off.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| C2.7 | Commits are signed with SSH. Each machine that commits has its own signing key, registered on the GitHub account as a signing key named `<machine> signing`, and the checkout sets `commit.gpgsign=true` with the key kept outside the repository. A machine sets this up before its first commit; a checkout that cannot sign does not commit. Public rulesets enforce `required_signatures`; private repositories rely on the local setting plus review, because Free offers no central enforcement. Unsigned branch commits made before a machine had a key are acceptable only in a pull request that is squash-merged, because GitHub signs the squash commit on `main`; they are never pushed or fast-forwarded to `main`. The signature is never bypassed. |
 
 ## Required checks
 
@@ -199,7 +200,7 @@ value or a global one, runs `lefthook install`, and asserts that `lefthook dump`
 `core-*` and `owner-*` jobs. `lefthook-local.yml` is git-ignored.
 
 C5.1 measurement, median of available pull-request runs on 2026-11-23: `agent-tooling` 13 s,
-`lilith-haos-pi5` 14 s, `parents-windows-pc` 14 s, `ugallu-omarchy-desktop` 13 s,
+`lilith-haos-pi5` 14 s, `parents-windows-pc` 14 s, `ugallu-cachyos-desktop` 13 s,
 `ryouko-cachyos-laptop` 21 s, `homelab-services` 66 s, `shamiko-ubuntu-server` 95 s. The last two
 exceed 60 s and record exceptions until the fix in the backlog lands.
 
@@ -294,10 +295,11 @@ says so in its plan. A merged document is not permission to execute it.
 ### H5. Names
 
 Machine repositories are `<character>-<os>-<formfactor>`, lowercase, for example
-`shamiko-ubuntu-server`, `ryouko-cachyos-laptop`, `lilith-haos-pi5`. A machine the owner
+`shamiko-ubuntu-server`, `ryouko-cachyos-laptop`, `ugallu-cachyos-desktop`, `lilith-haos-pi5`. A machine the owner
 administers for someone else is named for whose it is instead of a character:
 `<who>-<os>-<formfactor>`, for example `parents-windows-pc`. Service and tooling
-repositories are plain kebab nouns: `homelab-services`, `agent-tooling`, `machine-inventory`.
+repositories are plain kebab nouns: `homelab-services`, `agent-tooling`, `machine-inventory`,
+`workstation-cachyos-baseline`.
 `.github` and `.github-private` use GitHub's reserved names.
 
 ### H6. Languages
@@ -308,13 +310,13 @@ Windows target (`parents-windows-pc`), linted and parsed on Linux (C5.6). Existi
 allowed under an exception row with a reason and a revisit date of **2027-06-30**, until the
 repository is ported or the owner records a new date:
 
-| Repository               | Python surface                 | Exception                           |
-| ------------------------ | ------------------------------ | ----------------------------------- |
-| `lilith-haos-pi5`        | 22 scripts and tests           | port to Bun behind the same recipes |
-| `shamiko-ubuntu-server`  | 78 scripts, package and tests  | port in place, module by module     |
-| `ugallu-omarchy-desktop` | 3 planning scripts             | port before the migration executes  |
-| `homelab-services`       | 22 acceptance and test scripts | port behind `just test`             |
-| `hermes-agent`           | Python project                 | owner decides during the rewrite    |
+| Repository               | Python surface                  | Exception                           |
+| ------------------------ | ------------------------------- | ----------------------------------- |
+| `lilith-haos-pi5`        | 22 scripts and tests            | port to Bun behind the same recipes |
+| `shamiko-ubuntu-server`  | 78 scripts, package and tests   | port in place, module by module     |
+| `ugallu-cachyos-desktop` | 3 Windows-side planning scripts | delete at the CachyOS install       |
+| `homelab-services`       | 22 acceptance and test scripts  | port behind `just test`             |
+| `hermes-agent`           | Python project                  | owner decides during the rewrite    |
 
 ### H7. Machine repository skeleton
 
@@ -341,7 +343,8 @@ favicon.svg
 ```
 
 `docs/coverage.md`, `docs/recreation.md` and a feature register are allowed additions where the
-repository needs them.
+repository needs them. A CachyOS machine repository that consumes the shared baseline also carries
+`baseline/`, `baseline.lock` and `machine.toml`, as H13 defines.
 
 `SKILLS.md` is dropped. `AGENTS.md` is the only entry point (C8.1), each skill describes itself in
 frontmatter, and a copied index drifts. Skill links are per-skill symlinks as shown above, not one
@@ -404,6 +407,29 @@ title and body (C2.3), so the pull-request body is the permanent record: it stat
 the verification run, and any rollback. No AI attribution, no `Generated with`, no
 `Co-Authored-By` trailer.
 
+### H13. Shared workstation baseline
+
+`workstation-cachyos-baseline` holds the procedures, templates and `just` recipes that every
+CachyOS + KDE Plasma machine shares. Machine repositories vendor it; they never reference it at
+run time.
+
+- **Releases.** The baseline releases annotated tags `baseline-v<N>`, the same pattern as
+  `hooks-v<N>`. A tag never moves.
+- **Vendoring.** A consumer copies the tagged tree into `baseline/` with `git archive` (no
+  submodules; H1 forbids them) and records the source in `baseline.lock`: repository, tag,
+  commit SHA and a tree hash of `baseline/`. Nothing under `baseline/` is edited in the
+  consumer; a change lands in the baseline and arrives through a new tag.
+- **Scope.** The baseline ships CachyOS procedures, templates and recipes only. It never
+  vendors the hook scripts, `checks.yml`, `guard-direct-push.yml` or `pr-automerge.yml`; those
+  stay owned by `agent-tooling` and the hook standard (C7.8 to C7.11, H2).
+- **Recipes.** The consumer's `justfile` uses `import 'baseline/justfile'`. Every baseline
+  recipe is prefixed `baseline-` so it never collides with the C7.5 and C7.10 contract recipes.
+- **Drift.** CI checks offline that `baseline/` still hashes to `baseline.lock`; a
+  `GITHUB_TOKEN` cannot read another private repository. Whether a newer tag exists is checked
+  locally by `just check` only.
+- **Machine values.** `machine.toml` holds placeholders and non-identifying values (H1). Real
+  addresses, serials, usernames and hostnames beyond the machine name stay outside Git.
+
 ## Superseded
 
 This standard replaces the following documents. This pull request does not edit them; each row
@@ -446,7 +472,7 @@ Follow-ups, in order, none in this pull request:
 | `lilith-haos-pi5`        | Python-only recipes with no `mise.toml` (H6, H8); no `.claude/skills` links (C8.3); `SKILLS.md` index (H7); checks workflow named "Documentation and safeguards" (H9); `archive/*`/`wip/*` branches (H11); the validation/coverage document set differs from its siblings (H7).                                                                                                                                                                                                               | Adopt the canonical skeleton and recipes, then port the scripts.                                                                                               | 14 s                               |
 | `ryouko-cachyos-laptop`  | `check` omits `privacy-identity` (H2); stale repository description says "Bazzite laptop to Omarchy migration" (C1.2); no `docs/validation.md` or `docs/coverage.md` (H7); `.bun-version` 1.4.4 versus the 1.4.5 pin (H8); one `archive/` branch (H11); checks workflow name (H9).                                                                                                                                                                                                            | Adopt the canonical recipe and skeleton; update description and Bun pin.                                                                                       | 21 s                               |
 | `parents-windows-pc`     | Stale `package.json` pins `bun@1.4.3` and `engines.bun >=1.4.3` (H8); no `docs/coverage.md` (H7); checks workflow name (H9); local clone stale.                                                                                                                                                                                                                                                                                                                                               | Pin Bun 1.4.5, adopt the skeleton.                                                                                                                             | 14 s                               |
-| `ugallu-omarchy-desktop` | Windows/WSL clone rule becomes wrong after the Omarchy install (H7 AGENTS.md requirement); 3 Python scripts (H6); no `mise.toml` (H8); `SKILLS.md` (H7); checks workflow name (H9); planning-only repo has no acceptance evidence for the target layout.                                                                                                                                                                                                                                      | Rewrite the host rule with the migration, port scripts, adopt the skeleton.                                                                                    | 13 s                               |
+| `ugallu-cachyos-desktop` | Windows 11 to CachyOS + KDE Plasma migration in progress in its own work thread; 3 Windows-side planning scripts (H6); adopting `workstation-cachyos-baseline` (H13).                                                                                                                                                                                                                                                                                                                         | Finish the migration, delete the Windows-side scripts at install, vendor the baseline.                                                                         | 13 s                               |
 | `.github-private`        | Every push went straight to `main` with no pull request (C2.1); no guard, automerge, hooks or dependabot (C3, H9); `delete_branch_on_merge=false`, `allow_update_branch=false`; only default labels, missing `automerge`, `major-update`, `direct-push`, `dependencies`; single initial commit predates this policy.                                                                                                                                                                          | Apply the private-repository settings, labels and workflows; next change arrives through a pull request.                                                       | no runs                            |
 | `machine-inventory`      | Public repository with every CI job gated on `simpsonm09-org`/`simpsonm09-projects`, so checks are skipped (H3); secret scanning, push protection and validity checks off; CodeQL is an advanced workflow, not default setup (C6.1); ruleset has no required status checks; auto-merge off and merge/rebase methods still enabled; no `favicon.svg` (C1.3); no `mise.toml`; recipes are `lint`/`verify`/`render-check`, not the C7.5 set; depends on another owner's reusable workflows (H3). | Adopt the public exception: remove owner gates and foreign reusable workflows, set the ruleset and scan settings, add favicon, mise and the canonical recipes. | 130 s (historic; jobs now skipped) |
 | `hermes-agent`           | Same owner-gate and public-scan gaps as `machine-inventory` (H3, C6.1), including auto-merge off and merge/rebase methods enabled; no `favicon.svg`; Python project without an H6 exception row; CI and `codeql.yml` inherited from the old organization; mid-rewrite by another agent.                                                                                                                                                                                                       | Land the standard with the rewrite; do not edit independently until that rewrite finishes.                                                                     | 86 s (historic; jobs now skipped)  |
