@@ -411,19 +411,22 @@ the verification run, and any rollback. No AI attribution, no `Generated with`, 
 
 `workstation-cachyos-baseline` holds the procedures, templates and `just` recipes that every
 CachyOS + KDE Plasma machine shares. Machine repositories vendor it; they never reference it at
-run time.
+run time. The consumer contract in detail is
+[`docs/consumption.md`](https://github.com/sakuragaoka-homelab/workstation-cachyos-baseline/blob/main/docs/consumption.md)
+in that repository; this rule is the summary it must satisfy.
 
 - **Releases.** The baseline releases annotated tags `baseline-v<N>`, the same pattern as
   `hooks-v<N>`. A tag never moves.
 - **Vendoring.** A consumer copies the tagged tree into `baseline/` with `git archive` (no
   submodules; H1 forbids them) and records the source in `baseline.lock`: repository, tag,
-  commit SHA and a tree hash of `baseline/`. Nothing under `baseline/` is edited in the
+  commit SHA and `tree_sha256`, the tree hash of `baseline/` (TOML). Nothing under `baseline/` is edited in the
   consumer; a change lands in the baseline and arrives through a new tag.
 - **Scope.** The baseline ships CachyOS procedures, templates and recipes only. It never
   vendors the hook scripts, `checks.yml`, `guard-direct-push.yml` or `pr-automerge.yml`; those
   stay owned by `agent-tooling` and the hook standard (C7.8 to C7.11, H2).
-- **Recipes.** The consumer's `justfile` uses `import 'baseline/justfile'`. Every baseline
-  recipe is prefixed `baseline-` so it never collides with the C7.5 and C7.10 contract recipes.
+- **Recipes.** The consumer's `justfile` uses `import 'baseline/consumer.justfile'`, which
+  holds only `baseline-*` recipes, so nothing collides with the C7.5 and C7.10 contract recipes.
+  The consumer's own `check` recipe includes `baseline-drift`.
 - **Drift.** CI checks offline that `baseline/` still hashes to `baseline.lock`; a
   `GITHUB_TOKEN` cannot read another private repository. Whether a newer tag exists is checked
   locally by `just check` only.
