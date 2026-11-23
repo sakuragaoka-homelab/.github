@@ -46,7 +46,7 @@ private except the two public exceptions in H3.
 C2.1 is enforced by three layers. None of them is allowed to be the only one.
 
 1. **Lefthook, loading `hooks/core.yml` and `hooks/owner.yml`** from this repository through
-   `remotes` at the `hooks-v2` tag and installed by `just hooks`. The `core-policy` job refuses any
+   `remotes` at the `hooks-v3` tag and installed by `just hooks`. The `core-policy` job refuses any
    push whose remote ref is `refs/heads/main`, then scans the exact commits being pushed for
    private material and secrets. It is the only layer that runs before data reaches GitHub.
 2. **`.github/workflows/guard-direct-push.yml`** runs after a push to `main`, asks the API whether
@@ -174,7 +174,7 @@ edit left in the automerge copy.
 
 The launchers are Lefthook, not shell scripts. Each repository's `lefthook.yml` loads
 `hooks/core.yml` and `hooks/owner.yml` from this repository through `remotes` at the annotated tag
-`hooks-v2`, and `just hooks` installs them (C7.8). The `core-policy` job calls
+`hooks-v3`, and `just hooks` installs them (C7.8). The `core-policy` job calls
 `just hook-pre-push`, which runs `bun scripts/git-hook.ts pre-push` with the pushed ref lines on
 standard input. The `hook-*` recipes stay `[private]`.
 
@@ -207,7 +207,7 @@ exceed 60 s and record exceptions until the fix in the backlog lands.
 
 Hooks run through Lefthook, pinned in `mise.toml` as `"aqua:evilmartians/lefthook"` (C7.8). Each
 repository's `lefthook.yml` loads `hooks/core.yml` and `hooks/owner.yml` from this repository
-through `remotes` at the annotated tag `hooks-v2`, and adds its own jobs under names that never
+through `remotes` at the annotated tag `hooks-v3`, and adds its own jobs under names that never
 start with `core-` or `owner-`. Repositories migrate from the old `.githooks` launchers to Lefthook
 per core C7.8; `scripts/git-hook.ts` stays the `hook-pre-push` implementation.
 
