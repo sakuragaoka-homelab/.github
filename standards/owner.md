@@ -458,6 +458,18 @@ its first consumer vendors it. This rule is the summary both must satisfy.
   locally by `just check` only.
 - **Machine values.** `machine.toml` holds placeholders and non-identifying values (H1). Real
   addresses, serials, usernames and hostnames beyond the machine name stay outside Git.
+- **Ansible (planned).** Host and system layers become Ansible roles. Servers are applied from
+  shamiko; workstations apply locally with `just baseline-apply` (`ansible-playbook -c local`),
+  because laptops roam and sleep. On workstations only the system layer is Ansible (pacman and
+  AUR packages, systemd services, system configuration, users, Tailscale, toolchain, SSH,
+  restic); desktop and dotfile settings stay baseline recipes or a dotfiles tool. Roles that are
+  the same on both (Tailscale, toolchain, SSH, restic, users) are copied into each baseline first
+  and moved into one shared role collection only if the duplication proves real. The workstation
+  conversion starts after `ugallu-cachyos-desktop` is stable on the current baseline.
+- **Secrets in automation.** Ansible reads secrets from OpenBao at run time through the
+  `community.hashi_vault` lookup; no secret is committed, and Ansible Vault is not used (H1).
+  Bootstrap material that must exist before OpenBao is unsealed (unseal keys, root and recovery
+  material) stays in Vaultwarden plus an offline copy.
 - **Planned repositories.** A row marked planned records an intended contract, not a repository.
   It has no clone, release, tag or consumer until the owner approves creating it. No machine may
   claim to consume a baseline that does not exist, and no rule above is satisfied by a planned
